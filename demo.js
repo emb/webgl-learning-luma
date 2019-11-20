@@ -1,6 +1,8 @@
 const { AnimationLoop, Model, Buffer, setParameters } = require('@luma.gl/core')
 const fit = require('canvas-fit')
 const { GUI } = require('dat.gui')
+const createCamera = require('3d-view-controls')
+const mat4 = require('gl-mat4')
 
 // Create a canvas
 const canvas = document.body.appendChild(document.createElement('canvas'))
@@ -18,12 +20,14 @@ gui.addColor(settings, 'pointColor')
 
 const VERTEX_SHADER = `\
 uniform float pointSize;
+uniform mat4 projection;
+uniform mat4 view;
 
 attribute vec3 position;
 
 void main() {
   gl_PointSize = pointSize;
-  gl_Position = vec4(position, 1);
+  gl_Position = projection * view * vec4(position, 1);
 }
 `
 const FRAGMENT_SHADER = `\
@@ -38,7 +42,7 @@ void main() {
 const animationLoop = new AnimationLoop({
   debug: true,
 
-  onInitialize ({ gl, canvas, aspect }) {
+  onInitialize ({ gl, canvas }) {
     const positions = []
     let i = 1002
     while (i--) {
@@ -57,6 +61,11 @@ const animationLoop = new AnimationLoop({
     })
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+    const camera = createCamera(canvas)
+    camera.lookAt([2, 2, 2], [0, 0, 0], [0, 1, 0])
+    settings.view = camera.matrix
+    settings.projection = mat4.perspective([], Math.PI / 4, canvas.width / canvas.height, 0.01, 100)
+
     const earth = new Model(gl, {
       vs: VERTEX_SHADER,
       fs: FRAGMENT_SHADER,
@@ -68,11 +77,15 @@ const animationLoop = new AnimationLoop({
       vertexCount: positions.length / 3
     })
     earth.draw()
-    return { earth }
+    return { earth, camera }
   },
 
-  onRender: function ({ gl, earth }) {
+  onRender: function ({ gl, earth, camera }) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    camera.tick()
+    camera.up = [0, 1, 0]
+    settings.view = camera.matrix
+    settings.projection = mat4.perspective([], Math.PI / 4, canvas.width / canvas.height, 0.01, 100)
     earth.setUniforms(settings).draw()
   }
 })
