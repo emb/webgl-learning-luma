@@ -1,8 +1,12 @@
 README
 ======
 
-After attending Taylor's tutorial on writing shaders I thought can I
-use luma instead of regl to do the same thing?
+After attending Taylor's tutorial on writing shaders I thought could
+use [luma](https://luma.gl) instead of [regl](http://regl.party/) to
+do the same thing. Why? because of lack of imagination.
+
+[Original Tutoria](https://github.com/rolyatmax/webgl-learnin)
+
 
 BUILD
 -----
