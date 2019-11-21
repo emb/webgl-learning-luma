@@ -22,3 +22,7 @@ to view the demo.
 ```
 npm start
 ```
+
+What it should look like?
+-------------------------
+![Earth](data/result.png)
